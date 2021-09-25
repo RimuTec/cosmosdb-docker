@@ -1,0 +1,59 @@
+version: '3.7'
+
+services:
+   cosmosdb-demo:
+      container_name: cosmosdb-demo-dev
+      hostname: demo-dev.local
+      build:
+         context: .
+      working_dir: /src
+      volumes:
+         - ..:/src:cached
+      command: >
+         bash -c "pwsh /src/.devcontainer/init.ps1 && sleep infinity"
+      depends_on:
+         - database
+      networks:
+         cosmosdb-demo-network:
+            ipv4_address: 172.23.0.2 # Can't start with 172.23.0.1 which is the default gateway
+
+   database:
+      # https://docs.microsoft.com/en-us/azure/cosmos-db/linux-emulator
+      # Once running, the CosmosDB emulator can be accessed using a browser on the host at
+      # https://localhost:1241/_explorer/index.html
+      container_name: cosmosdb-demo-database
+      hostname: demo-database.local
+      image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator
+      cpus: 2.0
+      mem_limit: 3g
+      ports:
+         # Ports mostly derived from https://docs.microsoft.com/en-us/azure/cosmos-db/emulator-command-line-parameters
+         - 1241:8081 # Default emulator port
+         - 1242:8901 # Gremlin port
+         - 1243:8902 # Table port
+         - 1244:10251 # CosmosDB direct port
+         - 1245:10252 # CosmosDB direct port
+         - 1246:10253 # CosmosDB direct port
+         - 1247:10254 # CosmosDB direct port
+         - 1248:10255 # MongoDB port
+         - 1249:10350 # Cassandra port
+      environment:
+         # Env variables mostly derived from https://docs.microsoft.com/en-us/azure/cosmos-db/emulator-command-line-parameters
+         # and from https://docs.microsoft.com/en-us/azure/cosmos-db/local-emulator?tabs=ssl-netstd21
+         # Comment in/out CosmosDB features as needed:
+         - AZURE_COSMOS_EMULATOR_PARTITION_COUNT=10
+         - AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE=true
+         - AZURE_COSMOS_EMULATOR_GREMLIN_ENDPOINT=true
+         # - AZURE_COSMOS_EMULATOR_CASSANDRA_ENDPOINT=true
+         # - AZURE_COSMOS_EMULATOR_MONGODB_ENDPOINT=true
+         # - AZURE_COSMOS_EMULATOR_ENABLE_TABLE_ENDPOINT=true
+      networks:
+         cosmosdb-demo-network:
+            ipv4_address: 172.23.0.99
+
+networks:
+   cosmosdb-demo-network:
+      ipam:
+         driver: default
+         config:
+            - subnet: "172.23.0.0/16"
