@@ -20,7 +20,7 @@ chown -R dev:dev /src
 
 
 #################################################################################################################
-# Retrieve the self-signed SSL certificate of the CosmosDB Emulator
+# Retrieve the self-signed SSL certificate of the CosmosDB Emulator and install in dev container
 #
 echo Retrieving self-signed SSL certificate from CosmosDB Emulator
 # Ref: https://docs.microsoft.com/en-us/azure/cosmos-db/linux-emulator?tabs=ssl-netstd21#run-on-linux
@@ -28,7 +28,7 @@ retry=1
 while [ $retry -lt 21 ]
 do
    # Use wget instead of curl as it is more reliable in terms of error handling. [Manfred, 22sep2021]
-   wget --no-check-certificate --output-document=/tmp/emulator.crt https://demo-database.local:1241/_explorer/emulator.pem
+   wget --no-check-certificate --output-document=/tmp/emulator.crt https://demo-database.local:8081/_explorer/emulator.pem
    if [ "$?" -eq 0 ]
    then
       echo "wget successful"
@@ -48,11 +48,12 @@ rm -rf /etc/ssl/certs/emulator.pem
 update-ca-certificates > /tmp/update-ca-certificates-result.txt
 # To check if the previous result was successful, check content of file /tmp/update-ca-certificates-result.txt
 #
-# To confirm the certificate was correctly installed, use the following command. It doesn't use option 
-# '--no-check-certificate' which means it will use the certificate that was just installed
-# wget https://database.local:1241/_explorer/emulator.pem
+# To confirm the certificate was correctly installed, use the following command from inside the dev container. 
+# Note that it doesn't use option '--no-check-certificate' which means, if successful, it used the certificate
+# that was just installed:
+#    wget https://demo-database.local:8081/_explorer/emulator.pem
 #
-# Check certificate DNS entries with the following command
+# To check certificate DNS entries in the self-signed certificate with the following command
 # openssl x509 -noout -text -in /tmp/emulator.crt
 
 

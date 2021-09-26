@@ -15,7 +15,7 @@ services:
          - database
       networks:
          cosmosdb-demo-network:
-            ipv4_address: 172.23.0.2 # Can't start with 172.23.0.1 which is the default gateway
+            ipv4_address: 172.24.0.2 # Can't start with *.*.0.1 which is the default gateway
 
    database:
       # https://docs.microsoft.com/en-us/azure/cosmos-db/linux-emulator
@@ -49,11 +49,11 @@ services:
          # - AZURE_COSMOS_EMULATOR_ENABLE_TABLE_ENDPOINT=true
       networks:
          cosmosdb-demo-network:
-            ipv4_address: 172.23.0.99
+            ipv4_address: 172.24.0.99 # we use *.*.0.99 to leave some addresses for additional dependencies
 
 networks:
    cosmosdb-demo-network:
       ipam:
          driver: default
          config:
-            - subnet: "172.23.0.0/16"
+            - subnet: "172.24.0.0/16"
